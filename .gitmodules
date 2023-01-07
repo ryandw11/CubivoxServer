@@ -1,0 +1,3 @@
+[submodule "CubivoxCore"]
+	path = CubivoxCore
+	url = https://github.com/ryandw11/CubivoxCore.git
