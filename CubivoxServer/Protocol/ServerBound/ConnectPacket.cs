@@ -15,25 +15,21 @@ namespace CubivoxServer.Protocol.ServerBound
 {
     public class ConnectPacket : ServerBoundPacket
     {
-        public bool ProcessPacket(Client client, NetworkStream stream)
+        public async Task<bool> ProcessPacket(Client client, NetworkStream stream)
         {
-            Console.WriteLine("Start Connect Packet");
             byte[] rawProtocolVersion = new byte[2];
-            if (stream.Read(rawProtocolVersion, 0, 2) != 2) return false;
+
+            await NetworkUtil.FillBufferFromNetwork(rawProtocolVersion, stream);
 
             // TODO :: Handle this.
             ushort protocolVersion = BitConverter.ToUInt16(rawProtocolVersion);
-            byte[] rawUsername = new byte[25];
-            if (stream.Read(rawUsername, 0, 25) != 25) return false;
-            string username = Encoding.ASCII.GetString(rawUsername);
 
-            Console.WriteLine("Username: " + username);
-            Console.WriteLine("Start Connect Packet 2");
+            byte[] rawUsername = new byte[25];
+            await NetworkUtil.FillBufferFromNetwork(rawUsername, stream);
+            string username = Encoding.ASCII.GetString(rawUsername).Trim();
 
             byte[] rawUuid = new byte[16];
-            int rd = stream.Read(rawUuid, 0, 16);
-            Console.WriteLine(rd);
-            if ( rd != 16) return false;
+            await NetworkUtil.FillBufferFromNetwork(rawUuid, stream);
             Guid uuid = new Guid(rawUuid);
 
             ServerPlayer serverPlayer = new ServerPlayer(client, uuid, username, new Location(0, 54, 0));
@@ -42,16 +38,13 @@ namespace CubivoxServer.Protocol.ServerBound
 
             ServerCubivox server = ServerCubivox.GetServer();
 
-            Console.WriteLine("Start Connect Packet 3");
-
             server.HandlePlayerConnection(serverPlayer);
-
-            Console.WriteLine("Start Connect Packet 4");
 
             var response = new ConnectionResponsePacket();
             response.ServerName = "Test Server";
             response.Voxels = new string[0];
             response.Players = new System.Text.Json.JsonElement[server.GetPlayers().Count - 1];
+
             int i = 0;
             foreach (var player in server.GetPlayers())
             {
@@ -59,7 +52,7 @@ namespace CubivoxServer.Protocol.ServerBound
                 response.Players[i] = player.ToJsonObject();
                 i++;
             }
-            Console.WriteLine("Sent Response Packet");
+
             client.SendPacket(response);
             return true;
         }

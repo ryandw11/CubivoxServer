@@ -14,18 +14,18 @@ namespace CubivoxServer.Protocol.ServerBound
 {
     public class UpdatePlayerPosition : ServerBoundPacket
     {
-        public bool ProcessPacket(Client client, NetworkStream stream)
+        public async Task<bool> ProcessPacket(Client client, NetworkStream stream)
         {
             if (client.ServerPlayer == null) return false;
 
             byte[] rawDouble = new byte[8];
-            if(stream.Read(rawDouble, 0, 8) != 8) return false;
+            await NetworkUtil.FillBufferFromNetwork(rawDouble, stream);
             double x = BitConverter.ToDouble(rawDouble);
 
-            if (stream.Read(rawDouble, 0, 8) != 8) return false;
+            await NetworkUtil.FillBufferFromNetwork(rawDouble, stream);
             double y = BitConverter.ToDouble(rawDouble);
 
-            if (stream.Read(rawDouble, 0, 8) != 8) return false;
+            await NetworkUtil.FillBufferFromNetwork(rawDouble, stream);
             double z = BitConverter.ToDouble(rawDouble);
 
             client.ServerPlayer.Location.Set(x, y, z);

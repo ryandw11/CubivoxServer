@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CubivoxServer.Protocol.ClientBound;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,10 +12,12 @@ namespace CubivoxServer.Networking
         public static readonly int MAX_CLIENTS = 10;
 
         private List<Client> clients;
+        private List<Client> clientsToRemove;
 
         public ClientPool()
         {
             clients = new List<Client>();
+            clientsToRemove = new List<Client>();
         }
 
         public bool HasSpace()
@@ -31,12 +34,46 @@ namespace CubivoxServer.Networking
 
         public async Task PollClients()
         {
-            Task<bool>[] tasks = new Task<bool>[clients.Count];
-            for (int i = 0; i < clients.Count; i++)
+            List<Task<bool>> tasks = new List<Task<bool>>();
+            foreach (var client in clients)
             {
-                tasks[i] = clients[i].PollData();
+                if (!client.GetClient().Connected) {
+                    clientsToRemove.Add(client);
+                } else if(client.GetClient().Client.Poll(0, System.Net.Sockets.SelectMode.SelectRead))
+                {
+                    if(client.GetClient().Client.Receive(new byte[1], System.Net.Sockets.SocketFlags.Peek) == 0)
+                        clientsToRemove.Add(client);
+                    else
+                        tasks.Add(client.PollData());
+                }
             }
+
+            if(clientsToRemove.Count != 0)
+            {
+                foreach (Client client in clientsToRemove)
+                {
+                    HandleClientDisconnect(client);
+                }
+                clientsToRemove.Clear();
+            }
+
             await Task.WhenAll(tasks);
+        }
+
+        public void HandleClientDisconnect(Client client)
+        {
+            clients.Remove(client);
+
+            if (client.ServerPlayer != null)
+            {
+                Console.WriteLine($"{client.ServerPlayer.Username} has left the game!");
+                ServerCubivox.GetServer().GetPlayers().Remove(client.ServerPlayer);
+
+                foreach (var player in ServerCubivox.GetServer().GetPlayers())
+                {
+                    player.SendPacket(new PlayerDisconnectPacket(client.ServerPlayer.Uuid));
+                }
+            }
         }
     }
 }

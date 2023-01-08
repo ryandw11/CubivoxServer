@@ -25,6 +25,11 @@ namespace CubivoxServer.Networking
             ServerPlayer = null;
         }
 
+        public TcpClient GetClient()
+        {
+            return tcpClient;
+        }
+
         public bool HasData()
         {
             return stream.DataAvailable;
@@ -45,17 +50,14 @@ namespace CubivoxServer.Networking
 
             byte[] id = new byte[1];
             if (await networkStream.ReadAsync(id, 0, 1) != 1) return false;
-            Console.WriteLine($"Packet {(int)id[0]}");
             try
             {
-                ServerCubivox.GetServer().GetPacketManager().GetPacket(id[0]).ProcessPacket(this, networkStream);
+                return await ServerCubivox.GetServer().GetPacketManager().GetPacket(id[0]).ProcessPacket(this, networkStream);
             } catch (KeyNotFoundException)
             {
-                Console.WriteLine("Test");
+                Console.WriteLine("[Error | Networking] Client sent a packet that was not found!");
                 return false;
             }
-
-            return true;
         }
 
         public ServerPlayer? GetServerPlayer()

@@ -51,7 +51,7 @@ namespace CubivoxServer
             try
             {
                 Console.WriteLine($"Starting Cubivox Server on port {port}.");
-                IPAddress localAddress = IPAddress.Parse("127.0.0.1");
+                IPAddress localAddress = IPAddress.Parse("localhost");
 
                 server = new TcpListener(localAddress, port);
 
@@ -70,7 +70,20 @@ namespace CubivoxServer
 
                     if (pollDataTask.IsCompleted)
                     {
-                        await pollDataTask;
+                        try
+                        {
+                            await pollDataTask;
+                        } catch (IOException ex)
+                        {
+                            if ((ex.InnerException != null && !(ex.InnerException is SocketException)) || ex.InnerException == null)
+                            {
+                                throw new Exception("An error has occured processing data!", ex);
+                            }
+                        } catch (SocketException)
+                        {
+                            Console.WriteLine("[Warning] A socket exception has occured.");
+                            // Do nothing.
+                        }
                         pollDataTask = clientManager.pollData();
                     }
                     Thread.Sleep(1);
@@ -104,9 +117,11 @@ namespace CubivoxServer
             }
 
             players.Add(player);
+            Console.WriteLine($"{player.Username} has joined the game!");
+
 
             // Inform all online players about this user.
-            foreach(ServerPlayer p in players)
+            foreach (ServerPlayer p in players)
             {
                 // Ignore the same player.
                 if (p.Uuid == player.Uuid) continue;

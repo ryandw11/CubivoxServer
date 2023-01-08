@@ -13,6 +13,6 @@ namespace CubivoxServer.Protocol
 {
     public interface ServerBoundPacket : Packet
     {
-        bool ProcessPacket(Client client, NetworkStream stream);
+        Task<bool> ProcessPacket(Client client, NetworkStream stream);
     }
 }
