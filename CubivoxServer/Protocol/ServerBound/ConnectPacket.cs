@@ -35,6 +35,7 @@ namespace CubivoxServer.Protocol.ServerBound
             ServerPlayer serverPlayer = new ServerPlayer(client, uuid, username, new Location(0, 54, 0));
 
             client.ServerPlayer = serverPlayer;
+            client.CompletedHandshake = true;
 
             ServerCubivox server = ServerCubivox.GetServer();
 

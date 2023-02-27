@@ -16,6 +16,8 @@ namespace CubivoxServer.Networking
     {
         private TcpClient tcpClient;
         private NetworkStream stream;
+
+        public bool CompletedHandshake { get; internal set; }
         public ServerPlayer? ServerPlayer { get; internal set; }
 
         public Client(TcpClient tcpClient)
@@ -23,6 +25,7 @@ namespace CubivoxServer.Networking
             this.tcpClient = tcpClient;
             stream = tcpClient.GetStream();
             ServerPlayer = null;
+            CompletedHandshake = false;
         }
 
         public TcpClient GetClient()
@@ -50,6 +53,15 @@ namespace CubivoxServer.Networking
 
             byte[] id = new byte[1];
             if (await networkStream.ReadAsync(id, 0, 1) != 1) return false;
+
+            // Kick client if it does not attempt a handshake.
+            if (id[0] != 0x0 && !CompletedHandshake)
+            {
+                networkStream.Close();
+                tcpClient.Close();
+                return false;
+            }
+
             try
             {
                 return await ServerCubivox.GetServer().GetPacketManager().GetPacket(id[0]).ProcessPacket(this, networkStream);

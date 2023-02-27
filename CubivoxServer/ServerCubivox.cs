@@ -51,7 +51,7 @@ namespace CubivoxServer
             try
             {
                 Console.WriteLine($"Starting Cubivox Server on port {port}.");
-                IPAddress localAddress = IPAddress.Parse("localhost");
+                IPAddress localAddress = IPAddress.Parse("127.0.0.1");
 
                 server = new TcpListener(localAddress, port);
 
