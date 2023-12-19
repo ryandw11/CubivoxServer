@@ -10,6 +10,8 @@ using CubivoxServer.Networking;
 using CubivoxServer.Players;
 using CubivoxServer.Protocol.ServerBound;
 using CubivoxServer.Protocol.ClientBound;
+using CubivoxCore.BaseGame.VoxelDefs;
+using CubivoxServer.Items;
 
 namespace CubivoxServer
 {
@@ -43,7 +45,8 @@ namespace CubivoxServer
 
         public override void OnEnable()
         {
-            
+            itemRegistry.RegisterItem(new AirVoxel());
+            itemRegistry.RegisterItem(new TestVoxel(this));
         }
 
         public async void StartServer(int port)

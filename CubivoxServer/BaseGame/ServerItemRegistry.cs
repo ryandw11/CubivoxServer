@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using CubivoxCore;
 using CubivoxCore.BaseGame;
@@ -11,12 +12,18 @@ namespace CubivoxServer.BaseGame
     public class ServerItemRegistry : ItemRegistry
     {
         private Dictionary<ControllerKey, Item> itemDictionary;
-        private List<ControllerKey> idList;
+
+        private Dictionary<short, VoxelDef> voxelMap;
+        private Dictionary<VoxelDef, short> reverseVoxelMap;
+        private short currentVoxelIndex;
 
         public ServerItemRegistry()
         {
             itemDictionary = new Dictionary<ControllerKey, Item>();
-            idList = new List<ControllerKey>();
+
+            voxelMap = new Dictionary<short, VoxelDef>();
+            reverseVoxelMap = new Dictionary<VoxelDef, short>();
+            currentVoxelIndex = 0;
         }
 
         public Item GetItem(ControllerKey key)
@@ -32,8 +39,14 @@ namespace CubivoxServer.BaseGame
         public void RegisterItem(Item item)
         {
             itemDictionary.Add(item.GetControllerKey(), item);
-            // TODO :: Load from save file.
-            idList.Add(item.GetControllerKey());
+
+            if (item is VoxelDef)
+            {
+                Console.WriteLine("test");
+                voxelMap[currentVoxelIndex] = (VoxelDef)item;
+                reverseVoxelMap[(VoxelDef)item] = currentVoxelIndex;
+                currentVoxelIndex++;
+            }
         }
 
         public void UnregisterItem(Item item)
@@ -41,19 +54,41 @@ namespace CubivoxServer.BaseGame
             itemDictionary.Remove(item.GetControllerKey());
         }
 
-        public ControllerKey GetKeyFromId(ushort id)
+        public VoxelDef GetVoxelDef(short id)
         {
-            return idList[id];
+            return voxelMap[id];
         }
 
-        /// <summary>
-        /// Get the ControllerKey array in the order of its ID.
-        /// </summary>
-        /// 
-        /// <returns>The ControllerKey array in the order of its ID.</returns>
-        public ControllerKey[] GetKeyArray()
+        public short GetVoxelDefId(VoxelDef voxelDef)
         {
-            return idList.ToArray();
+            return reverseVoxelMap[voxelDef];
+        }
+
+        public JsonElement[] GetVoxelDict()
+        {
+            JsonElement[] copyDict = new JsonElement[voxelMap.Count];
+            int i = 0;
+            foreach(KeyValuePair<short,VoxelDef> pair in voxelMap)
+            {
+                copyDict[i] = JsonSerializer.SerializeToElement(new {
+                    Id = pair.Key,
+                    ControllerKey = pair.Value.GetControllerKey().ToString(),
+                });
+                i++;
+            }
+            return copyDict;
+        }
+
+        public VoxelDef GetVoxelDefinition(ControllerKey key)
+        {
+            Item item = itemDictionary[key];
+
+            if(item is VoxelDef)
+            {
+                return (VoxelDef)item;
+            }
+
+            return null;
         }
     }
 }

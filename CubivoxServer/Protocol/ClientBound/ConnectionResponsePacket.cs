@@ -11,7 +11,7 @@ namespace CubivoxServer.Protocol.ClientBound
     public class ConnectionResponsePacket : ClientBoundPacket
     {
         public string ServerName { get; set; }
-        public string[] Voxels { get; set; }
+        public JsonElement[] VoxelMap { get; set; }
         public JsonElement[] Players { get; set; }
         
         public void WritePacket(NetworkStream stream)

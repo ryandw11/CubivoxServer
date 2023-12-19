@@ -11,6 +11,7 @@ namespace CubivoxServer
         static void Main(string[] args)
         {
             ServerCubivox serverCubivox = new ServerCubivox();
+            serverCubivox.OnEnable();
             serverCubivox.StartServer(5555);
         }
     }

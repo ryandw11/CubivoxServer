@@ -43,7 +43,7 @@ namespace CubivoxServer.Protocol.ServerBound
 
             var response = new ConnectionResponsePacket();
             response.ServerName = "Test Server";
-            response.Voxels = new string[0];
+            response.VoxelMap = server.GetServerItemRegistry().GetVoxelDict();
             response.Players = new System.Text.Json.JsonElement[server.GetPlayers().Count - 1];
 
             int i = 0;
