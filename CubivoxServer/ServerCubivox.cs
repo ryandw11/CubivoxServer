@@ -2,6 +2,9 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 using CubivoxCore;
 
@@ -36,6 +39,8 @@ namespace CubivoxServer
 
             packetManager.RegisterPacket(new ConnectPacket());
             packetManager.RegisterPacket(new UpdatePlayerPosition());
+            packetManager.RegisterPacket(new SBBreakVoxelPacket());
+            packetManager.RegisterPacket(new SBPlaceVoxelPacket());
         }
 
         public override EnvType GetEnvType()
