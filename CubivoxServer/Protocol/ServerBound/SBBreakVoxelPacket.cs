@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using CubivoxServer;
 using CubivoxServer.Players;
 using CubivoxServer.Protocol.ClientBound;
+using CubivoxCore.BaseGame;
 
 namespace CubivoxServer.Protocol.ServerBound
 {
@@ -28,16 +29,8 @@ namespace CubivoxServer.Protocol.ServerBound
             await NetworkUtil.FillBufferFromNetwork(rawInt, stream);
             int z = BitConverter.ToInt32(rawInt);
 
-            // TODO :: Modify Server Voxels
-
-            lock(ServerCubivox.GetServer().GetPlayers())
-            {
-                foreach(ServerPlayer player in ServerCubivox.GetServer().GetPlayers())
-                {
-                    if (player.Uuid == client.ServerPlayer.Uuid) continue;
-                    player.SendPacket(new CBBreakVoxelPacket(x, y, z));
-                }
-            }
+            VoxelDef voxelType = ServerCubivox.GetServer().GetServerItemRegistry().GetVoxelDef(0);
+            ServerCubivox.GetServer().GetWorlds()[0].SetVoxel(x, y, z, voxelType);
 
             return true;
         }

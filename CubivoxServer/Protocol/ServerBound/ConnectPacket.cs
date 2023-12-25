@@ -10,6 +10,8 @@ using CubivoxCore;
 
 using CubivoxServer.Players;
 using CubivoxServer.Protocol.ClientBound;
+using CubivoxServer.Worlds;
+using CubivoxServer.BaseGame;
 
 namespace CubivoxServer.Protocol.ServerBound
 {
@@ -55,7 +57,23 @@ namespace CubivoxServer.Protocol.ServerBound
             }
 
             client.SendPacket(response);
+
+            // Now the player has connected, send the required chunks to the player.
+            _ = Task.Run(() => SendChunks(client));
+
             return true;
+        }
+
+        public void SendChunks(Client client)
+        {
+            Console.WriteLine("[DEBUG] Starting to send chunk data to player: " + client.GetServerPlayer().GetName());
+            ServerWorld world = ServerCubivox.GetServer().GetWorlds()[0];
+            foreach(var chunk in world.GetLoadedChunks())
+            {
+                CBLoadChunkPacket loadChunkPacket = new CBLoadChunkPacket(chunk.Value);
+                client.SendPacket(loadChunkPacket);
+            }
+            Console.WriteLine("[DEBUG] Finished sending chunk data to player: " + client.GetServerPlayer().GetName());
         }
 
         byte Packet.GetType()

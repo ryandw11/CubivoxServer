@@ -15,6 +15,8 @@ using CubivoxServer.Protocol.ServerBound;
 using CubivoxServer.Protocol.ClientBound;
 using CubivoxCore.BaseGame.VoxelDefs;
 using CubivoxServer.Items;
+using CubivoxServer.Worlds;
+using CubivoxServer.Utils;
 
 namespace CubivoxServer
 {
@@ -28,6 +30,7 @@ namespace CubivoxServer
         private bool shouldStop = false;
 
         private List<ServerPlayer> players;
+        private List<ServerWorld> worlds;
 
         public ServerCubivox()
         {
@@ -36,6 +39,7 @@ namespace CubivoxServer
             clientManager = new ClientManager();
             packetManager = new ServerBoundPacketManager();
             players = new List<ServerPlayer>();
+            worlds = new List<ServerWorld>();
 
             packetManager.RegisterPacket(new ConnectPacket());
             packetManager.RegisterPacket(new UpdatePlayerPosition());
@@ -52,6 +56,44 @@ namespace CubivoxServer
         {
             itemRegistry.RegisterItem(new AirVoxel());
             itemRegistry.RegisterItem(new TestVoxel(this));
+
+            // Load basic stuff here for now:
+            ServerWorld world = new ServerWorld();
+            worlds.Add(world);
+
+            // TODO: Don't hard code this in the future.
+            Console.WriteLine("Generating World...");
+
+            List<Task> generationTasks = new List<Task>();
+            for (int x = -10; x < 10; x++)
+            {
+                for (int y = 0; y < 16; y++)
+                {
+                    for (int z = -10; z < 10; z++)
+                    {
+                        ServerChunk serverChunk = new ServerChunk(new Location(x, y, z));
+                        generationTasks.Add(Task.Factory.StartNew(o => {
+                            ServerChunk sChunk = (ServerChunk) o;
+                            byte[,,] voxels = new byte[ServerChunk.CHUNK_SIZE, ServerChunk.CHUNK_SIZE, ServerChunk.CHUNK_SIZE];
+                            MemoryUtils.Fill3DArray(ref voxels, (byte)0, ServerChunk.CHUNK_SIZE * ServerChunk.CHUNK_SIZE * ServerChunk.CHUNK_SIZE);
+                            Dictionary<byte, short> voxelMap = new Dictionary<byte, short>();
+                            if (sChunk.GetLocation().y < 2)
+                            {
+                                voxelMap.Add(0, 1);
+                            }
+                            else
+                            {
+                                voxelMap.Add(0, 0);
+                            }
+                            //voxelMap.Add(0, 1);
+                            sChunk.PopulateChunk(voxels, voxelMap, 1);
+                            world.AddLoadedChunk(sChunk);
+                        }, serverChunk));
+                    }
+                }
+            }
+            Task.WaitAll(generationTasks.ToArray());
+            Console.WriteLine("Finished Generating World!");
         }
 
         public async void StartServer(int port)
@@ -115,6 +157,11 @@ namespace CubivoxServer
         public List<ServerPlayer> GetPlayers()
         {
             return players;
+        }
+
+        public List<ServerWorld> GetWorlds()
+        {
+            return worlds;
         }
 
         internal void HandlePlayerConnection(ServerPlayer player)

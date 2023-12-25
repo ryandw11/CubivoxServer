@@ -9,7 +9,7 @@ using CubivoxServer.BaseGame;
 
 namespace CubivoxServer
 {
-    public class CMath
+    public class ServerCMath
     {
         public static int FloorToInt(double v)
         {
