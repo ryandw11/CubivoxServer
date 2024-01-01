@@ -30,7 +30,7 @@ namespace CubivoxServer.Worlds
 
         public void RemoveLoadedChunk(ServerChunk chunk)
         {
-            loadedChunks.TryRemove(chunk.GetLocation(), out _);
+            loadedChunks.Remove(chunk.GetLocation(), out _);
         }
 
         public Chunk GetChunk(Location location)

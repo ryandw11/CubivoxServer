@@ -68,12 +68,17 @@ namespace CubivoxServer.Protocol.ServerBound
         {
             Console.WriteLine("[DEBUG] Starting to send chunk data to player: " + client.GetServerPlayer().GetName());
             ServerWorld world = ServerCubivox.GetServer().GetWorlds()[0];
-            foreach(var chunk in world.GetLoadedChunks())
+            Dictionary<Location, ServerChunk> chunks;
+            lock (world)
+            {
+                 chunks = new Dictionary<Location, ServerChunk>(world.GetLoadedChunks());
+            }
+            foreach(var chunk in chunks)
             {
                 CBLoadChunkPacket loadChunkPacket = new CBLoadChunkPacket(chunk.Value);
                 client.SendPacket(loadChunkPacket);
             }
-            Console.WriteLine("[DEBUG] Finished sending chunk data to player: " + client.GetServerPlayer().GetName());
+            Console.WriteLine("[DEBUG] Finished sending chunk data to player: " + client.GetServerPlayer().GetName() + $" ({chunks.Count} chunks)");
         }
 
         byte Packet.GetType()

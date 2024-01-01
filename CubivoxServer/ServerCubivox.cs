@@ -131,7 +131,7 @@ namespace CubivoxServer
             try
             {
                 Console.WriteLine($"Starting Cubivox Server on port {port}.");
-                IPAddress localAddress = IPAddress.Parse("127.0.0.1");
+                IPAddress localAddress = IPAddress.Parse("0.0.0.0");
 
                 server = new TcpListener(localAddress, port);
 
@@ -159,9 +159,11 @@ namespace CubivoxServer
                             {
                                 throw new Exception("An error has occured processing data!", ex);
                             }
-                        } catch (SocketException)
+                        } catch (SocketException ex)
                         {
+
                             Console.WriteLine("[Warning] A socket exception has occured.");
+                            Console.WriteLine(ex.Message);
                             // Do nothing.
                         }
                         pollDataTask = clientManager.pollData();
