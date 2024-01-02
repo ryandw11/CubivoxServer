@@ -17,6 +17,8 @@ namespace CubivoxServer.Networking
         private TcpClient tcpClient;
         private NetworkStream stream;
 
+        private readonly object WriteStreamLock = new object();
+
         public bool CompletedHandshake { get; internal set; }
         public ServerPlayer? ServerPlayer { get; internal set; }
 
@@ -79,9 +81,12 @@ namespace CubivoxServer.Networking
 
         public void SendPacket(ClientBoundPacket clientBoundPacket)
         {
-            stream.WriteByte(clientBoundPacket.GetType());
-            clientBoundPacket.WritePacket(stream);
-            stream.Flush();
+            lock(WriteStreamLock)
+            {
+                stream.WriteByte(clientBoundPacket.GetType());
+                clientBoundPacket.WritePacket(stream);
+                stream.Flush();
+            }
         }
     }
 }
