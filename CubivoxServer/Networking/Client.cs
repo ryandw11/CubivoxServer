@@ -59,8 +59,7 @@ namespace CubivoxServer.Networking
             // Kick client if it does not attempt a handshake.
             if (id[0] != 0x0 && !CompletedHandshake)
             {
-                networkStream.Close();
-                tcpClient.Close();
+                Disconnect();
                 return false;
             }
 
@@ -87,6 +86,12 @@ namespace CubivoxServer.Networking
                 clientBoundPacket.WritePacket(stream);
                 stream.Flush();
             }
+        }
+
+        internal void Disconnect()
+        {
+            stream.Close();
+            tcpClient.Close();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using CubivoxCore;
 using CubivoxCore.BaseGame;
 using CubivoxCore.Worlds;
+using CubivoxCore.Worlds.Generation;
 using CubivoxServer.BaseGame;
 using System;
 using System.Collections.Concurrent;
@@ -132,6 +133,11 @@ namespace CubivoxServer.Worlds
         public ConcurrentDictionary<Location, ServerChunk> GetLoadedChunks()
         {
             return loadedChunks;
+        }
+
+        public WorldGenerator GetGenerator()
+        {
+            throw new NotImplementedException();
         }
     }
 }

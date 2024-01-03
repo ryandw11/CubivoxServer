@@ -18,6 +18,8 @@ using CubivoxServer.Items;
 using CubivoxServer.Worlds;
 using CubivoxServer.Utils;
 using CubivoxCore.BaseGame;
+using CubivoxServer.BaseGame.Generation;
+using CubivoxServer.BaseGame.Generation.Generators;
 
 namespace CubivoxServer
 {
@@ -37,6 +39,7 @@ namespace CubivoxServer
         {
             instance = this;
             itemRegistry = new ServerItemRegistry();
+            generatorRegistry = new ServerGeneratorRegistry();
             clientManager = new ClientManager();
             packetManager = new ServerBoundPacketManager();
             players = new List<ServerPlayer>();
@@ -58,6 +61,8 @@ namespace CubivoxServer
             itemRegistry.RegisterItem(new AirVoxel());
             itemRegistry.RegisterItem(new TestVoxel(this));
 
+            generatorRegistry.RegisterWorldGenerator(this, new FlatHillsGenerator());
+
             // Load basic stuff here for now:
             ServerWorld world = new ServerWorld();
             worlds.Add(world);
@@ -66,8 +71,6 @@ namespace CubivoxServer
             Console.WriteLine("Generating World...");
 
             List<Task> generationTasks = new List<Task>();
-            FastNoiseLite noise = new FastNoiseLite();
-            noise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
             for (int x = -10; x < 10; x++)
             {
                 for (int y = 0; y < 16; y++)
@@ -77,46 +80,9 @@ namespace CubivoxServer
                         ServerChunk serverChunk = new ServerChunk(new Location(x, y, z));
                         generationTasks.Add(Task.Factory.StartNew(o => {
                             ServerChunk sChunk = (ServerChunk) o;
-                            byte[,,] voxels = new byte[ServerChunk.CHUNK_SIZE, ServerChunk.CHUNK_SIZE, ServerChunk.CHUNK_SIZE];
-                            if (sChunk.GetLocation().y != 2)
-                            {
-                                MemoryUtils.Fill3DArray(ref voxels, (byte)0, ServerChunk.CHUNK_SIZE * ServerChunk.CHUNK_SIZE * ServerChunk.CHUNK_SIZE);
-                                Dictionary<byte, short> voxelMap = new Dictionary<byte, short>();
-                                if (sChunk.GetLocation().y < 2)
-                                {
-                                    voxelMap.Add(0, 1);
-                                }
-                                else
-                                {
-                                    voxelMap.Add(0, 0);
-                                }
-                                //voxelMap.Add(0, 1);
-                                sChunk.PopulateChunk(voxels, voxelMap, 1);
-                            }
-                            else
-                            {
-
-                                Dictionary<byte, short> voxelMap = new Dictionary<byte, short> { { 0, 0 }, { 1, 1 } };
-                                for (int x = 0; x < ServerChunk.CHUNK_SIZE; x++)
-                                {
-                                    for (int z = 0; z < ServerChunk.CHUNK_SIZE; z++)
-                                    {
-                                        double height = noise.GetNoise(x + (float) (sChunk.GetLocation().x * ServerChunk.CHUNK_SIZE), z + (float)(sChunk.GetLocation().z * ServerChunk.CHUNK_SIZE)) * 16;
-                                        for (int y = 0; y < ServerChunk.CHUNK_SIZE; y++)
-                                        {
-                                            if (y < height)
-                                            {
-                                                voxels[x, y, z] = 1;
-                                            }
-                                            else
-                                            {
-                                                voxels[x, y, z] = 0;
-                                            }
-                                        }
-                                    }
-                                }
-                                sChunk.PopulateChunk(voxels, voxelMap, 2);
-                            }
+                            ServerChunkData sData = new ServerChunkData();
+                            generatorRegistry.GetDefaultWorldGenerator().GenerateChunk(sChunk.GetLocation().GetVoxelX(), sChunk.GetLocation().GetVoxelY(), sChunk.GetLocation().GetVoxelZ(), sData);
+                            sChunk.PopulateChunk(sData.Voxels, sData.VoxelMap, sData.CurrentVoxelIndex);
                             world.AddLoadedChunk(sChunk);
                         }, serverChunk));
                     }
@@ -229,6 +195,15 @@ namespace CubivoxServer
         public static ServerCubivox GetServer()
         {
             return (ServerCubivox) instance;
+        }
+
+        public override void AssertServer()
+        {
+        }
+
+        public override void AssertClient()
+        {
+            throw new Exception();
         }
     }
 }

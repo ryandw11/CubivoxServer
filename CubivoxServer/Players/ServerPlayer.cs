@@ -10,6 +10,7 @@ using CubivoxCore.Players;
 
 using CubivoxServer.Networking;
 using CubivoxServer.Protocol;
+using CubivoxServer.Protocol.ClientBound;
 
 namespace CubivoxServer.Players
 {
@@ -31,6 +32,15 @@ namespace CubivoxServer.Players
         public Entity GetEntityType()
         {
             throw new NotImplementedException();
+        }
+
+        public void SetLocation(Location location)
+        {
+            this.Location = Location;
+            foreach(ServerPlayer player in ServerCubivox.GetServer().GetPlayers())
+            {
+                player.SendPacket(new PlayerPositionUpdatePacket(this));
+            }
         }
 
         public Location GetLocation()
@@ -56,6 +66,12 @@ namespace CubivoxServer.Players
         public void SendMessage(string message)
         {
             throw new NotImplementedException();
+        }
+
+        public void Kick(string reason)
+        {
+            SendPacket(new DisconnectPacket(reason));
+            Client.Disconnect();
         }
 
         internal Client GetClient()
