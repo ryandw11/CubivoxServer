@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using CubivoxCore;
+using CubivoxCore.Chat;
 
 using CubivoxServer.BaseGame;
 using CubivoxServer.Networking;
@@ -176,6 +177,7 @@ namespace CubivoxServer
             // Inform all online players about this user.
             foreach (ServerPlayer p in players)
             {
+                p.SendMessage($"{player.Username} has joined the game!".Color("yellow"));
                 // Ignore the same player.
                 if (p.Uuid == player.Uuid) continue;
                 p.SendPacket(new PlayerConnectionPacket(player));

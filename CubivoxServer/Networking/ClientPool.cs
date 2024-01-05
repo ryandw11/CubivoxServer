@@ -1,4 +1,6 @@
-﻿using CubivoxServer.Protocol.ClientBound;
+﻿using CubivoxCore.Chat;
+using CubivoxServer.Protocol.ClientBound;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,6 +74,7 @@ namespace CubivoxServer.Networking
                 foreach (var player in ServerCubivox.GetServer().GetPlayers())
                 {
                     player.SendPacket(new PlayerDisconnectPacket(client.ServerPlayer.Uuid));
+                    player.SendMessage($"{client.ServerPlayer.Username} has left the game!".Color("yellow"));
                 }
             }
         }

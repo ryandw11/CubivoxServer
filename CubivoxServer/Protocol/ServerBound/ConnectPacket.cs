@@ -28,7 +28,7 @@ namespace CubivoxServer.Protocol.ServerBound
 
             byte[] rawUsername = new byte[25];
             await NetworkUtil.FillBufferFromNetwork(rawUsername, stream);
-            string username = Encoding.ASCII.GetString(rawUsername).Trim();
+            string username = Encoding.ASCII.GetString(rawUsername).Trim().Replace("\0", "");
 
             byte[] rawUuid = new byte[16];
             await NetworkUtil.FillBufferFromNetwork(rawUuid, stream);

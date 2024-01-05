@@ -20,7 +20,9 @@ namespace CubivoxServer.Protocol.ClientBound
 
         public void WritePacket(NetworkStream stream)
         {
-            byte[] name = Encoding.ASCII.GetBytes(player.GetName());
+            byte[] name = new byte[25];
+            byte[] nameBuff = Encoding.ASCII.GetBytes(player.GetName());
+            Array.Copy(nameBuff, name, nameBuff.Length < 26 ? nameBuff.Length : 25);
             stream.Write(name, 0, 25);
             // Pad out the name if it is less that 25 characters.
             if (name.Length < 25)

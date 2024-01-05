@@ -36,7 +36,7 @@ namespace CubivoxServer.Players
 
         public void SetLocation(Location location)
         {
-            this.Location = Location;
+            this.Location = location;
             foreach(ServerPlayer player in ServerCubivox.GetServer().GetPlayers())
             {
                 player.SendPacket(new PlayerPositionUpdatePacket(this));
@@ -65,7 +65,7 @@ namespace CubivoxServer.Players
 
         public void SendMessage(string message)
         {
-            throw new NotImplementedException();
+            SendPacket(new CBChatMessagePacket(message));
         }
 
         public void Kick(string reason)
