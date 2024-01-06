@@ -78,7 +78,7 @@ namespace CubivoxServer
                 {
                     for (int z = -10; z < 10; z++)
                     {
-                        ServerChunk serverChunk = new ServerChunk(new Location(x, y, z));
+                        ServerChunk serverChunk = new ServerChunk(new Location(world, x, y, z));
                         generationTasks.Add(Task.Factory.StartNew(o => {
                             ServerChunk sChunk = (ServerChunk) o;
                             ServerChunkData sData = new ServerChunkData();

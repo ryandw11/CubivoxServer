@@ -47,7 +47,7 @@ namespace CubivoxServer.Worlds
 
         public Chunk GetChunk(int x, int y, int z)
         {
-            return GetChunk(new Location(x, y, z));
+            return GetChunk(new Location(this, x, y, z));
         }
 
         public Location GetSpawnLocation()

@@ -10,6 +10,8 @@ using CubivoxServer;
 using CubivoxServer.Players;
 using CubivoxServer.Protocol.ClientBound;
 using CubivoxCore.BaseGame;
+using CubivoxServer.Worlds;
+using CubivoxCore.Events;
 
 namespace CubivoxServer.Protocol.ServerBound
 {
@@ -30,7 +32,18 @@ namespace CubivoxServer.Protocol.ServerBound
             int z = BitConverter.ToInt32(rawInt);
 
             VoxelDef voxelType = ServerCubivox.GetServer().GetServerItemRegistry().GetVoxelDef(0);
-            ServerCubivox.GetServer().GetWorlds()[0].SetVoxel(x, y, z, voxelType);
+
+            ServerWorld world = ServerCubivox.GetServer().GetWorlds()[0];
+            Voxel existingVoxel = world.GetVoxel(x, y, z);
+
+            // Events
+            VoxelDefBreakEvent voxelDefBreakEvent = new VoxelDefBreakEvent(client.ServerPlayer, new CubivoxCore.Location(x, y, z));
+            existingVoxel.GetVoxelDef()._BreakEvent.Invoke(voxelDefBreakEvent);
+
+            if (!voxelDefBreakEvent.IsCancelled)
+            {
+                world.SetVoxel(x, y, z, voxelType);
+            }
 
             return true;
         }
