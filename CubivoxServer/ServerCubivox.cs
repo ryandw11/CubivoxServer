@@ -21,6 +21,12 @@ using CubivoxServer.Utils;
 using CubivoxCore.BaseGame;
 using CubivoxServer.BaseGame.Generation;
 using CubivoxServer.BaseGame.Generation.Generators;
+using CubivoxCore.Worlds.Generation;
+using CubivoxCore.Mods;
+using System.Reflection;
+using System.Text.Json;
+using CubivoxServer.Loggers;
+using System.Diagnostics;
 
 namespace CubivoxServer
 {
@@ -31,7 +37,9 @@ namespace CubivoxServer
         private TcpListener server;
         private ClientManager clientManager;
         private ServerBoundPacketManager packetManager;
-        private bool shouldStop = false;
+        private bool enabled = false;
+
+        private List<Mod> mods;
 
         private List<ServerPlayer> players;
         private List<ServerWorld> worlds;
@@ -43,6 +51,7 @@ namespace CubivoxServer
             generatorRegistry = new ServerGeneratorRegistry();
             clientManager = new ClientManager();
             packetManager = new ServerBoundPacketManager();
+            mods = new List<Mod>();
             players = new List<ServerPlayer>();
             worlds = new List<ServerWorld>();
 
@@ -57,12 +66,30 @@ namespace CubivoxServer
             return EnvType.SERVER;
         }
 
-        public override void OnEnable()
+        public override void LoadItemsStage(ItemRegistry itemRegistry)
         {
             itemRegistry.RegisterItem(new AirVoxel());
             itemRegistry.RegisterItem(new TestVoxel(this));
+        }
 
+        public override void LoadGeneratorsStage(GeneratorRegistry generatorRegistry)
+        {
             generatorRegistry.RegisterWorldGenerator(this, new FlatHillsGenerator());
+        }
+
+        public override void OnEnable()
+        {
+            if (enabled)
+            {
+                throw new Exception("Server Cubivox cannot be enabled twice.");
+            }
+            enabled = true;
+
+            LoadItemsStage(itemRegistry);
+            LoadGeneratorsStage(generatorRegistry);
+
+            // Load Mods
+            LoadMods();
 
             // Load basic stuff here for now:
             ServerWorld world = new ServerWorld();
@@ -206,6 +233,103 @@ namespace CubivoxServer
         public override void AssertClient()
         {
             throw new Exception();
+        }
+
+        private void LoadMods()
+        {
+            DirectoryInfo dir = new DirectoryInfo("." + Path.DirectorySeparatorChar + "mods");
+            if (!dir.Exists)
+            {
+                dir.Create();
+            }
+
+            foreach(FileInfo file in dir.GetFiles())
+            {
+                var dll = Assembly.LoadFile(file.FullName);
+                var resourceName = file.Name.Replace(".dll", "") + ".mod.json";
+
+                foreach (string res in dll.GetManifestResourceNames())
+                {
+                    Console.WriteLine(res);
+                }
+
+                string resource = null;
+                using (Stream stream = dll.GetManifestResourceStream(resourceName))
+                {
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        resource = reader.ReadToEnd();
+                    }
+                }
+
+                if(resource == null)
+                {
+                    Console.WriteLine($"Failed to load mod {file.Name}! Is the mod.json file in the right namespace?");
+                    continue;
+                }
+
+                ModDescriptionFile descriptionFile = JsonSerializer.Deserialize<ModDescriptionFile>(resource);
+
+                var mainModClass = dll.GetType(descriptionFile.MainClass);
+
+                if(mainModClass == null)
+                {
+                    Console.WriteLine($"Failed to load mod {file.Name}! Cannot find the mod's main class {descriptionFile.MainClass}!");
+                    continue;
+                }
+
+                ServerLogger logger = new ServerLogger(descriptionFile.ModName);
+
+                CubivoxMod mod = (CubivoxMod) Activator.CreateInstance(mainModClass, descriptionFile, logger);
+
+                if (mod == null)
+                {
+                    Console.WriteLine($"Failed to load mod {file.Name}! Unable to construct main mod class instance.");
+                    continue;
+                }    
+
+                mods.Add(mod);
+                Console.WriteLine($"Found and loaded mod {descriptionFile.ModName}.");
+            }
+
+            foreach(Mod mod in mods)
+            {
+                try
+                {
+                    mod.LoadItemsStage(itemRegistry);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"An internal error has occur for {mod.GetName()}:");
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+
+            foreach(Mod mod in mods)
+            {
+                try
+                {
+                    mod.LoadGeneratorsStage(generatorRegistry);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"An internal error has occur for {mod.GetName()}:");
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+
+            foreach(Mod mod in mods)
+            {
+                try
+                {
+                    mod.OnEnable();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"An internal error has occur for {mod.GetName()}:");
+                    Console.WriteLine(ex.ToString());
+                }
+            }
         }
     }
 }
