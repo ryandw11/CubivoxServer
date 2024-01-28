@@ -11,6 +11,9 @@ using CubivoxServer.Players;
 using CubivoxServer.Protocol.ClientBound;
 using CubivoxCore.BaseGame;
 using CubivoxCore.Events;
+using CubivoxServer.BaseGame;
+using CubivoxCore;
+using CubivoxServer.Utils;
 
 namespace CubivoxServer.Protocol.ServerBound
 {
@@ -38,10 +41,14 @@ namespace CubivoxServer.Protocol.ServerBound
             VoxelDef voxelType = ServerCubivox.GetServer().GetServerItemRegistry().GetVoxelDef(type);
             // Trigger Events
             VoxelDefPlaceEvent placeEvent = new VoxelDefPlaceEvent(client.ServerPlayer, new CubivoxCore.Location(x, y, z));
-            voxelType._PlaceEvent?.Invoke(placeEvent);
-            if(!placeEvent.IsCancelled)
+            Isolater.Isolate(() => voxelType._PlaceEvent?.Invoke(placeEvent));
+            if (!placeEvent.IsCancelled)
             {
-                ServerCubivox.GetServer().GetWorlds()[0].SetVoxel(x, y, z, voxelType);
+                VoxelPlaceEvent placeEvt = new VoxelPlaceEvent(client.ServerPlayer, new ServerVoxel(new CubivoxCore.Location(x, y, z), voxelType, null));
+                if (Cubivox.GetEventManager().TriggerEvent(placeEvt))
+                {
+                    ServerCubivox.GetServer().GetWorlds()[0].SetVoxel(x, y, z, voxelType);
+                }
             }    
 
             return true;

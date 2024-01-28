@@ -12,6 +12,9 @@ using CubivoxServer.Protocol.ClientBound;
 using CubivoxCore.BaseGame;
 using CubivoxServer.Worlds;
 using CubivoxCore.Events;
+using CubivoxServer.Utils;
+using CubivoxServer.BaseGame;
+using CubivoxCore;
 
 namespace CubivoxServer.Protocol.ServerBound
 {
@@ -38,11 +41,15 @@ namespace CubivoxServer.Protocol.ServerBound
 
             // Events
             VoxelDefBreakEvent voxelDefBreakEvent = new VoxelDefBreakEvent(client.ServerPlayer, new CubivoxCore.Location(x, y, z));
-            existingVoxel.GetVoxelDef()._BreakEvent.Invoke(voxelDefBreakEvent);
+            Isolater.Isolate(() => existingVoxel.GetVoxelDef()._BreakEvent.Invoke(voxelDefBreakEvent));
 
             if (!voxelDefBreakEvent.IsCancelled)
             {
-                world.SetVoxel(x, y, z, voxelType);
+                VoxelBreakEvent breakEvent = new VoxelBreakEvent(client.ServerPlayer, existingVoxel);
+                if(Cubivox.GetEventManager().TriggerEvent(breakEvent))
+                {
+                    world.SetVoxel(x, y, z, voxelType);
+                }
             }
 
             return true;

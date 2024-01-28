@@ -27,6 +27,8 @@ using System.Reflection;
 using System.Text.Json;
 using CubivoxServer.Loggers;
 using System.Diagnostics;
+using CubivoxCore.Console;
+using CubivoxServer.Events;
 
 namespace CubivoxServer
 {
@@ -40,6 +42,7 @@ namespace CubivoxServer
         private bool enabled = false;
 
         private List<Mod> mods;
+        private ServerLogger logger;
 
         private List<ServerPlayer> players;
         private List<ServerWorld> worlds;
@@ -49,11 +52,14 @@ namespace CubivoxServer
             instance = this;
             itemRegistry = new ServerItemRegistry();
             generatorRegistry = new ServerGeneratorRegistry();
+            eventManager = new ServerEventManager();
             clientManager = new ClientManager();
             packetManager = new ServerBoundPacketManager();
             mods = new List<Mod>();
             players = new List<ServerPlayer>();
             worlds = new List<ServerWorld>();
+
+            logger = new ServerLogger("Cubivox");
 
             packetManager.RegisterPacket(new ConnectPacket());
             packetManager.RegisterPacket(new UpdatePlayerPosition());
@@ -64,6 +70,11 @@ namespace CubivoxServer
         public override EnvType GetEnvType()
         {
             return EnvType.SERVER;
+        }
+
+        public override Logger GetLogger()
+        {
+            return logger;
         }
 
         public override void LoadItemsStage(ItemRegistry itemRegistry)
@@ -96,7 +107,7 @@ namespace CubivoxServer
             worlds.Add(world);
 
             // TODO: Don't hard code this in the future.
-            Console.WriteLine("Generating World...");
+            logger.Info("Generating World...");
 
             List<Task> generationTasks = new List<Task>();
             for (int x = -10; x < 10; x++)
@@ -117,14 +128,14 @@ namespace CubivoxServer
                 }
             }
             Task.WaitAll(generationTasks.ToArray());
-            Console.WriteLine("Finished Generating World!");
+            logger.Info("Finished Generating World!");
         }
 
         public async void StartServer(int port)
         {
             try
             {
-                Console.WriteLine($"Starting Cubivox Server on port {port}.");
+                logger.Info($"Starting Cubivox Server on port {port}.");
                 IPAddress localAddress = IPAddress.Parse("0.0.0.0");
 
                 server = new TcpListener(localAddress, port);
@@ -156,28 +167,28 @@ namespace CubivoxServer
                         } catch (SocketException ex)
                         {
 
-                            Console.WriteLine("[Warning] A socket exception has occured.");
-                            Console.WriteLine(ex.Message);
+                            logger.Warn("[Warning] A socket exception has occured.");
+                            logger.Warn(ex.Message);
                             // Do nothing.
                         }
                         pollDataTask = clientManager.pollData();
                     }
                     Thread.Sleep(1);
                 }
-                Console.WriteLine("Test3");
+                logger.Info("Test3");
             }
             catch (SocketException exception)
             {
-                Console.WriteLine("Test4");
-                Console.WriteLine(exception.ToString());
+                logger.Error("Test4");
+                logger.Error(exception.ToString());
             }
             finally
             {
-                Console.WriteLine("Test5");
+                logger.Info("Test5");
                 if (server != null)
                     server.Stop();
             }
-            Console.WriteLine("Test6");
+            logger.Info("Test6");
         }
 
         public List<ServerPlayer> GetPlayers()
@@ -198,7 +209,7 @@ namespace CubivoxServer
             }
 
             players.Add(player);
-            Console.WriteLine($"{player.Username} has joined the game!");
+            logger.Info($"{player.Username} has joined the game!");
 
 
             // Inform all online players about this user.
@@ -248,11 +259,6 @@ namespace CubivoxServer
                 var dll = Assembly.LoadFile(file.FullName);
                 var resourceName = file.Name.Replace(".dll", "") + ".mod.json";
 
-                foreach (string res in dll.GetManifestResourceNames())
-                {
-                    Console.WriteLine(res);
-                }
-
                 string resource = null;
                 using (Stream stream = dll.GetManifestResourceStream(resourceName))
                 {
@@ -264,7 +270,7 @@ namespace CubivoxServer
 
                 if(resource == null)
                 {
-                    Console.WriteLine($"Failed to load mod {file.Name}! Is the mod.json file in the right namespace?");
+                    logger.Error($"Failed to load mod {file.Name}! Is the mod.json file in the right namespace?");
                     continue;
                 }
 
@@ -274,22 +280,22 @@ namespace CubivoxServer
 
                 if(mainModClass == null)
                 {
-                    Console.WriteLine($"Failed to load mod {file.Name}! Cannot find the mod's main class {descriptionFile.MainClass}!");
+                    logger.Error($"Failed to load mod {file.Name}! Cannot find the mod's main class {descriptionFile.MainClass}!");
                     continue;
                 }
 
-                ServerLogger logger = new ServerLogger(descriptionFile.ModName);
+                ServerLogger modLogger = new ServerLogger(descriptionFile.ModName);
 
-                CubivoxMod mod = (CubivoxMod) Activator.CreateInstance(mainModClass, descriptionFile, logger);
+                CubivoxMod mod = (CubivoxMod) Activator.CreateInstance(mainModClass, descriptionFile, modLogger);
 
                 if (mod == null)
                 {
-                    Console.WriteLine($"Failed to load mod {file.Name}! Unable to construct main mod class instance.");
+                    logger.Error($"Failed to load mod {file.Name}! Unable to construct main mod class instance.");
                     continue;
                 }    
 
                 mods.Add(mod);
-                Console.WriteLine($"Found and loaded mod {descriptionFile.ModName}.");
+                logger.Info($"Found and loaded mod {descriptionFile.ModName}.");
             }
 
             foreach(Mod mod in mods)
@@ -300,8 +306,8 @@ namespace CubivoxServer
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"An internal error has occur for {mod.GetName()}:");
-                    Console.WriteLine(ex.ToString());
+                    logger.Error($"An internal error has occur for {mod.GetName()}:");
+                    logger.Error(ex.ToString());
                 }
             }
 
@@ -313,8 +319,8 @@ namespace CubivoxServer
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"An internal error has occur for {mod.GetName()}:");
-                    Console.WriteLine(ex.ToString());
+                    logger.Error($"An internal error has occur for {mod.GetName()}:");
+                    logger.Error(ex.ToString());
                 }
             }
 
@@ -326,8 +332,8 @@ namespace CubivoxServer
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"An internal error has occur for {mod.GetName()}:");
-                    Console.WriteLine(ex.ToString());
+                    logger.Error($"An internal error has occur for {mod.GetName()}:");
+                    logger.Error(ex.ToString());
                 }
             }
         }
