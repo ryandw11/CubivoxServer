@@ -41,7 +41,7 @@ namespace CubivoxServer.Protocol.ServerBound
 
             // Events
             VoxelDefBreakEvent voxelDefBreakEvent = new VoxelDefBreakEvent(client.ServerPlayer, new CubivoxCore.Location(x, y, z));
-            Isolater.Isolate(() => existingVoxel.GetVoxelDef()._BreakEvent.Invoke(voxelDefBreakEvent));
+            Isolater.Isolate(() => existingVoxel.GetVoxelDef()._BreakEvent?.Invoke(voxelDefBreakEvent));
 
             if (!voxelDefBreakEvent.IsCancelled)
             {
