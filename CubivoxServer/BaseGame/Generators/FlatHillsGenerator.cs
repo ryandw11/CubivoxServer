@@ -1,15 +1,19 @@
-﻿using CubivoxCore;
-using CubivoxCore.Attributes;
-using CubivoxCore.BaseGame;
-using CubivoxCore.Worlds.Generation;
-using CubivoxServer.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CubivoxServer.BaseGame.Generation.Generators
+using CubivoxCore;
+using CubivoxCore.Attributes;
+using CubivoxCore.Voxels;
+using CubivoxCore.Worlds.Generation;
+
+using CubivoxServer.Utils;
+using CubivoxServer.Worlds;
+using CubivoxServer.Worlds.Generation;
+
+namespace CubivoxServer.BaseGame.Generators
 {
     [Name("Flat Hills")]
     [Key("flat_hills")]
@@ -20,7 +24,7 @@ namespace CubivoxServer.BaseGame.Generation.Generators
         private VoxelDef test;
 
         public FlatHillsGenerator() : base()
-        { 
+        {
             noise = new FastNoiseLite();
             noise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
             air = Cubivox.GetVoxelDefinition(new ControllerKey("CUBIVOX", "AIR"));
@@ -29,11 +33,11 @@ namespace CubivoxServer.BaseGame.Generation.Generators
 
         public override void GenerateChunk(int chunkX, int chunkY, int chunkZ, ChunkData chunkData)
         {
-            ServerChunkData serverChunkData = (ServerChunkData) chunkData;
+            ServerChunkData serverChunkData = (ServerChunkData)chunkData;
             if (chunkY != 2)
             {
                 MemoryUtils.Fill3DArray(ref serverChunkData.Voxels, (byte)0, ServerChunk.CHUNK_SIZE * ServerChunk.CHUNK_SIZE * ServerChunk.CHUNK_SIZE);
-                
+
                 if (chunkY < 2)
                 {
                     serverChunkData.VoxelMap[0] = 1;

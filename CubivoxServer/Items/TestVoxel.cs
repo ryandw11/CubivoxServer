@@ -1,5 +1,6 @@
 ﻿using CubivoxCore.Attributes;
 using CubivoxCore.Mods;
+using CubivoxCore.Voxels;
 
 namespace CubivoxServer.Items
 {

@@ -3,32 +3,29 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
 using CubivoxCore;
+using CubivoxCore.BaseGame.VoxelDefs;
 using CubivoxCore.Chat;
+using CubivoxCore.Console;
+using CubivoxCore.Items;
+using CubivoxCore.Mods;
+using CubivoxCore.Worlds.Generation;
 
-using CubivoxServer.BaseGame;
+using CubivoxServer.BaseGame.Generators;
+using CubivoxServer.Events;
+using CubivoxServer.Items;
+using CubivoxServer.Loggers;
 using CubivoxServer.Networking;
 using CubivoxServer.Players;
 using CubivoxServer.Protocol.ServerBound;
 using CubivoxServer.Protocol.ClientBound;
-using CubivoxCore.BaseGame.VoxelDefs;
-using CubivoxServer.Items;
 using CubivoxServer.Worlds;
-using CubivoxServer.Utils;
-using CubivoxCore.BaseGame;
-using CubivoxServer.BaseGame.Generation;
-using CubivoxServer.BaseGame.Generation.Generators;
-using CubivoxCore.Worlds.Generation;
-using CubivoxCore.Mods;
-using System.Reflection;
-using System.Text.Json;
-using CubivoxServer.Loggers;
-using System.Diagnostics;
-using CubivoxCore.Console;
-using CubivoxServer.Events;
+using CubivoxServer.Worlds.Generation;
 
 namespace CubivoxServer
 {

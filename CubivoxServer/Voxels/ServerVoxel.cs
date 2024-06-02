@@ -5,9 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 using CubivoxCore;
-using CubivoxCore.BaseGame;
+using CubivoxCore.Voxels;
+using CubivoxCore.Worlds;
 
-namespace CubivoxServer.BaseGame
+using CubivoxServer.Worlds;
+
+namespace CubivoxServer.Voxels
 {
     public class ServerVoxel : Voxel
     {
@@ -35,11 +38,6 @@ namespace CubivoxServer.BaseGame
         public VoxelDef GetVoxelDef()
         {
             return voxelDef;
-        }
-
-        public void SetVoxelDef(VoxelDef voxelDef)
-        {
-            this.voxelDef = voxelDef;
         }
     }
 }

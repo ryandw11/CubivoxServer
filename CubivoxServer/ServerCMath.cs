@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using CubivoxCore;
-using CubivoxServer.BaseGame;
+using CubivoxServer.Worlds;
 
 namespace CubivoxServer
 {

@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+
 using CubivoxCore;
-using CubivoxCore.BaseGame;
+using CubivoxCore.Entities;
 using CubivoxCore.Players;
 
 using CubivoxServer.Networking;

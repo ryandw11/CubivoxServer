@@ -5,13 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 
 using CubivoxCore;
-using CubivoxCore.BaseGame;
 using CubivoxCore.Utils;
+using CubivoxCore.Voxels;
 using CubivoxCore.Worlds;
 using CubivoxServer.Players;
 using CubivoxServer.Protocol.ClientBound;
+using CubivoxServer.Voxels;
 
-namespace CubivoxServer.BaseGame
+namespace CubivoxServer.Worlds
 {
     public class ServerChunk : Chunk
     {
@@ -22,12 +23,9 @@ namespace CubivoxServer.BaseGame
         private Dictionary<byte, short> voxelMap = new Dictionary<byte, short>();
         private byte currentVoxelIndex = 0;
 
-        private bool isLoaded;
-
         public ServerChunk(Location location)
         {
             this.location = location;
-            this.isLoaded = false;
         }
 
         public Location GetLocation()
@@ -49,16 +47,6 @@ namespace CubivoxServer.BaseGame
             return location.GetWorld().Get();
         }
 
-        public bool IsLoaded()
-        {
-            return isLoaded;
-        }
-
-        public bool Load()
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
         /// Set a voxel in this chunk.
         /// 
@@ -73,7 +61,7 @@ namespace CubivoxServer.BaseGame
             SetLocalVoxel(CMath.mod(x, CHUNK_SIZE), CMath.mod(y, CHUNK_SIZE), CMath.mod(z, CHUNK_SIZE), voxelDef);
 
             List<ServerPlayer> players = ServerCubivox.GetServer().GetPlayers();
-            lock(players)
+            lock (players)
             {
                 foreach (ServerPlayer player in players)
                 {
@@ -126,7 +114,6 @@ namespace CubivoxServer.BaseGame
             this.voxels = voxels;
             this.voxelMap = voxelMap;
             this.currentVoxelIndex = currentVoxelIndex;
-            this.isLoaded = true;
         }
 
         private Voxel ByteToVoxel(byte b, Location location)

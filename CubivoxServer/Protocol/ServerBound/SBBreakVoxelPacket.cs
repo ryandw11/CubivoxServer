@@ -6,15 +6,12 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-using CubivoxServer;
-using CubivoxServer.Players;
-using CubivoxServer.Protocol.ClientBound;
-using CubivoxCore.BaseGame;
-using CubivoxServer.Worlds;
-using CubivoxCore.Events;
-using CubivoxServer.Utils;
-using CubivoxServer.BaseGame;
 using CubivoxCore;
+using CubivoxCore.Events;
+using CubivoxCore.Voxels;
+
+using CubivoxServer.Utils;
+using CubivoxServer.Worlds;
 
 namespace CubivoxServer.Protocol.ServerBound
 {

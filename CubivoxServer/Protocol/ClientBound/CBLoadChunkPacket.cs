@@ -5,8 +5,8 @@ using System.Net.Sockets;
 using CubivoxCore;
 using CubivoxCore.Attributes;
 using CubivoxCore.BaseGame;
-using CubivoxServer.BaseGame;
 using CubivoxServer.Utils;
+using CubivoxServer.Worlds;
 
 namespace CubivoxServer.Protocol.ClientBound
 {

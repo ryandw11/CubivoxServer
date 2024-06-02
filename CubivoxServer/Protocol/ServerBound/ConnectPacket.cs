@@ -11,7 +11,6 @@ using CubivoxCore;
 using CubivoxServer.Players;
 using CubivoxServer.Protocol.ClientBound;
 using CubivoxServer.Worlds;
-using CubivoxServer.BaseGame;
 
 namespace CubivoxServer.Protocol.ServerBound
 {

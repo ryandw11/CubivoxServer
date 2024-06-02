@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using CubivoxCore;
-using CubivoxCore.BaseGame;
 
-namespace CubivoxServer.BaseGame
+using CubivoxCore;
+using CubivoxCore.Items;
+using CubivoxCore.Voxels;
+
+namespace CubivoxServer.Items
 {
     public class ServerItemRegistry : ItemRegistry
     {
@@ -42,7 +44,6 @@ namespace CubivoxServer.BaseGame
 
             if (item is VoxelDef)
             {
-                Console.WriteLine("test");
                 voxelMap[currentVoxelIndex] = (VoxelDef)item;
                 reverseVoxelMap[(VoxelDef)item] = currentVoxelIndex;
                 currentVoxelIndex++;
@@ -68,9 +69,10 @@ namespace CubivoxServer.BaseGame
         {
             JsonElement[] copyDict = new JsonElement[voxelMap.Count];
             int i = 0;
-            foreach(KeyValuePair<short,VoxelDef> pair in voxelMap)
+            foreach (KeyValuePair<short, VoxelDef> pair in voxelMap)
             {
-                copyDict[i] = JsonSerializer.SerializeToElement(new {
+                copyDict[i] = JsonSerializer.SerializeToElement(new
+                {
                     Id = pair.Key,
                     ControllerKey = pair.Value.GetControllerKey().ToString(),
                 });
@@ -83,7 +85,7 @@ namespace CubivoxServer.BaseGame
         {
             Item item = itemDictionary[key];
 
-            if(item is VoxelDef)
+            if (item is VoxelDef)
             {
                 return (VoxelDef)item;
             }

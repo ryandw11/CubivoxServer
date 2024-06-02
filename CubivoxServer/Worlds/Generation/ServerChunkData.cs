@@ -1,13 +1,13 @@
-﻿using CubivoxCore.BaseGame;
-using CubivoxCore.Worlds.Generation;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CubivoxServer.BaseGame.Generation
+using CubivoxCore.Voxels;
+using CubivoxCore.Worlds.Generation;
+
+namespace CubivoxServer.Worlds.Generation
 {
     public class ServerChunkData : ChunkData
     {
