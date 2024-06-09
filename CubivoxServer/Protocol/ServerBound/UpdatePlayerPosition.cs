@@ -10,6 +10,9 @@ using CubivoxServer;
 using CubivoxServer.Players;
 using CubivoxServer.Protocol.ClientBound;
 
+using CubivoxCore;
+using CubivoxCore.Events.Global;
+
 namespace CubivoxServer.Protocol.ServerBound
 {
     public class UpdatePlayerPosition : ServerBoundPacket
@@ -28,14 +31,31 @@ namespace CubivoxServer.Protocol.ServerBound
             await NetworkUtil.FillBufferFromNetwork(rawDouble, stream);
             double z = BitConverter.ToDouble(rawDouble);
 
+            var oldLocation = client.ServerPlayer.Location.Clone();
             client.ServerPlayer.Location.Set(x, y, z);
+            var currentNewPosition = client.ServerPlayer.Location.Clone();
+            PlayerMoveEvent playerMoveEvent = new PlayerMoveEvent(client.ServerPlayer, client.ServerPlayer.Location, oldLocation);
+            Cubivox.GetEventManager().TriggerEvent(playerMoveEvent);
 
-            lock(ServerCubivox.GetServer().GetPlayers())
+            if (playerMoveEvent.IsCanceled())
             {
-                foreach(ServerPlayer player in ServerCubivox.GetServer().GetPlayers())
+                // Move the player back to where they were.
+                client.ServerPlayer.Location = oldLocation;
+                client.SendPacket(new PlayerPositionUpdatePacket(client.ServerPlayer));
+            }
+            else
+            {
+                // Ensure the event did not modify the player's location.
+                if (client.ServerPlayer.Location == currentNewPosition)
                 {
-                    if (player.Uuid == client.ServerPlayer.Uuid) continue;
-                    player.SendPacket(new PlayerPositionUpdatePacket(client.ServerPlayer));
+                    lock (ServerCubivox.GetServer().GetPlayers())
+                    {
+                        foreach (ServerPlayer player in ServerCubivox.GetServer().GetPlayers())
+                        {
+                            if (player.Uuid == client.ServerPlayer.Uuid) continue;
+                            player.SendPacket(new PlayerPositionUpdatePacket(client.ServerPlayer));
+                        }
+                    }
                 }
             }
 

@@ -26,6 +26,8 @@ using CubivoxServer.Protocol.ServerBound;
 using CubivoxServer.Protocol.ClientBound;
 using CubivoxServer.Worlds;
 using CubivoxServer.Worlds.Generation;
+using CubivoxCore.Events.Global;
+using CubivoxCore.Players;
 
 namespace CubivoxServer
 {
@@ -206,16 +208,42 @@ namespace CubivoxServer
             }
 
             players.Add(player);
+
+            PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(player);
+            eventManager.TriggerEvent(playerJoinEvent);
+
             logger.Info($"{player.Username} has joined the game!");
 
 
             // Inform all online players about this user.
             foreach (ServerPlayer p in players)
             {
-                p.SendMessage($"{player.Username} has joined the game!".Color("yellow"));
+                if (playerJoinEvent.Message.Length > 0)
+                {
+                    p.SendMessage(string.Format(playerJoinEvent.Message, player.Username));
+                }
+
                 // Ignore the same player.
                 if (p.Uuid == player.Uuid) continue;
                 p.SendPacket(new PlayerConnectionPacket(player));
+            }
+        }
+        internal void HandlePlayerDisconnect(ServerPlayer player)
+        {
+            logger.Info($"{player.Username} has left the game!");
+            players.Remove(player);
+
+            PlayerLeaveEvent playerLeaveEvent = new PlayerLeaveEvent(player);
+            eventManager.TriggerEvent(playerLeaveEvent);
+
+            // Inform all online players that this user disconnected.
+            foreach (var otherPlayer in players)
+            {
+                otherPlayer.SendPacket(new PlayerDisconnectPacket(player.Uuid));
+                if (playerLeaveEvent.Message.Length > 0)
+                {
+                    otherPlayer.SendMessage(string.Format(playerLeaveEvent.Message, player.Username));
+                }
             }
         }
 

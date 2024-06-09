@@ -22,7 +22,7 @@ namespace CubivoxServer.Worlds.Generation
 
         public WorldGenerator GetDefaultWorldGenerator()
         {
-            return worldGeneratorDictionary.Values.First();
+            return worldGeneratorDictionary.Values.Last();
         }
 
         public WorldGenerator GetWorldGenerator(ControllerKey controllerKey)

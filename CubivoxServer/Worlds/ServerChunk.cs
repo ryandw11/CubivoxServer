@@ -11,6 +11,7 @@ using CubivoxCore.Worlds;
 using CubivoxServer.Players;
 using CubivoxServer.Protocol.ClientBound;
 using CubivoxServer.Voxels;
+using CubivoxServer.Worlds.Generation;
 
 namespace CubivoxServer.Worlds
 {
@@ -52,10 +53,6 @@ namespace CubivoxServer.Worlds
         /// 
         /// This will send the Place Voxel Packet to each player in the server.
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
-        /// <param name="voxelDef"></param>
         public void SetVoxel(int x, int y, int z, VoxelDef voxelDef)
         {
             SetLocalVoxel(CMath.mod(x, CHUNK_SIZE), CMath.mod(y, CHUNK_SIZE), CMath.mod(z, CHUNK_SIZE), voxelDef);
@@ -70,6 +67,27 @@ namespace CubivoxServer.Worlds
             }
         }
 
+        public void Regenerate()
+        {
+            ServerChunkData chunkData = new ServerChunkData();
+            GetWorld().GetGenerator().GenerateChunk(location.GetVoxelX(), location.GetVoxelY(), location.GetVoxelZ(), chunkData);
+
+            // Move over the generate data
+            lock (voxels)
+            {
+                voxelMap = chunkData.VoxelMap;
+                voxels = chunkData.Voxels;
+                currentVoxelIndex = chunkData.CurrentVoxelIndex;
+            }
+
+            // Send the chunk load packet to the clients.
+            var players = ServerCubivox.GetServer().GetPlayers();
+            foreach (ServerPlayer player in players)
+            {
+                player.SendPacket(new CBLoadChunkPacket(this));
+            }
+        }
+
         /// <summary>
         /// Set the voxel using local chunk coordinates.
         /// This will NOT send a packet to players in the server.
@@ -81,15 +99,18 @@ namespace CubivoxServer.Worlds
         public void SetLocalVoxel(int x, int y, int z, VoxelDef voxelDef)
         {
             short voxelId = ServerCubivox.GetServer().GetServerItemRegistry().GetVoxelDefId(voxelDef);
-            if (voxelMap.ContainsValue(voxelId))
+            lock(voxels)
             {
-                byte key = voxelMap.First(pair => pair.Value == voxelId).Key;
-                voxels[x, y, z] = key;
-            }
-            else
-            {
-                voxelMap[currentVoxelIndex] = voxelId;
-                currentVoxelIndex++;
+                if (voxelMap.ContainsValue(voxelId))
+                {
+                    byte key = voxelMap.First(pair => pair.Value == voxelId).Key;
+                    voxels[x, y, z] = key;
+                }
+                else
+                {
+                    voxelMap[currentVoxelIndex] = voxelId;
+                    currentVoxelIndex++;
+                }
             }
         }
 

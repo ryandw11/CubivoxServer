@@ -7,11 +7,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 using CubivoxCore;
-using CubivoxCore.Events;
 using CubivoxCore.Voxels;
 
 using CubivoxServer.Utils;
 using CubivoxServer.Worlds;
+using CubivoxCore.Events.Local;
+using CubivoxCore.Events.Global;
 
 namespace CubivoxServer.Protocol.ServerBound
 {

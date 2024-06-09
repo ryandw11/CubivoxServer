@@ -6,7 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 using CubivoxCore;
-using CubivoxCore.Events;
+using CubivoxCore.Events.Global;
+using CubivoxCore.Events.Local;
 using CubivoxCore.Voxels;
 
 using CubivoxServer.Networking;

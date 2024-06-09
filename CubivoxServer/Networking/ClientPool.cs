@@ -68,14 +68,8 @@ namespace CubivoxServer.Networking
 
             if (client.ServerPlayer != null)
             {
-                Console.WriteLine($"{client.ServerPlayer.Username} has left the game!");
-                ServerCubivox.GetServer().GetPlayers().Remove(client.ServerPlayer);
-
-                foreach (var player in ServerCubivox.GetServer().GetPlayers())
-                {
-                    player.SendPacket(new PlayerDisconnectPacket(client.ServerPlayer.Uuid));
-                    player.SendMessage($"{client.ServerPlayer.Username} has left the game!".Color("yellow"));
-                }
+                client.ServerPlayer.Client = null;
+                ServerCubivox.GetServer().HandlePlayerDisconnect(client.ServerPlayer);
             }
         }
     }

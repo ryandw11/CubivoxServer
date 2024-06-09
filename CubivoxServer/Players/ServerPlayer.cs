@@ -20,7 +20,7 @@ namespace CubivoxServer.Players
         public Guid Uuid { get; private set; }
         public string Username { get; private set; }
         public Location Location { get; internal set; }
-        internal Client Client { get; private set; }
+        internal Client Client { get; set; }
 
         public ServerPlayer(Client client, Guid uuid, string name, Location location)
         {
