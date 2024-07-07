@@ -19,6 +19,10 @@ namespace CubivoxServer.Utils
             {
                 Cubivox.GetInstance().GetLogger().Warn("An internal error has occured!");
                 Cubivox.GetInstance().GetLogger().Warn(ex.Message);
+                if( ex.StackTrace != null )
+                {
+                    Cubivox.GetInstance().GetLogger().Warn(ex.StackTrace);
+                }
             }
         }
     }

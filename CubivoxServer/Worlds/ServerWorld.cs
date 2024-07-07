@@ -13,10 +13,13 @@ namespace CubivoxServer.Worlds
         private Location spawnLocation;
         private ConcurrentDictionary<Location, ServerChunk> loadedChunks;
         private int renderDistance = 16;
-        public ServerWorld()
+        private WorldGenerator worldGenerator;
+
+        public ServerWorld(WorldGenerator generator)
         {
             spawnLocation = new Location(0, 0, 0);
             loadedChunks = new ConcurrentDictionary<Location, ServerChunk>();
+            worldGenerator = generator;
         }
 
         public void AddLoadedChunk(ServerChunk chunk)
@@ -132,7 +135,7 @@ namespace CubivoxServer.Worlds
 
         public WorldGenerator GetGenerator()
         {
-            throw new NotImplementedException();
+            return worldGenerator;
         }
     }
 }

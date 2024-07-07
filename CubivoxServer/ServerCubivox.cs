@@ -12,8 +12,10 @@ using CubivoxCore;
 using CubivoxCore.BaseGame.VoxelDefs;
 using CubivoxCore.Chat;
 using CubivoxCore.Console;
+using CubivoxCore.Events.Global;
 using CubivoxCore.Items;
 using CubivoxCore.Mods;
+using CubivoxCore.Players;
 using CubivoxCore.Worlds.Generation;
 
 using CubivoxServer.BaseGame.Generators;
@@ -26,8 +28,8 @@ using CubivoxServer.Protocol.ServerBound;
 using CubivoxServer.Protocol.ClientBound;
 using CubivoxServer.Worlds;
 using CubivoxServer.Worlds.Generation;
-using CubivoxCore.Events.Global;
-using CubivoxCore.Players;
+using System.Collections.ObjectModel;
+using CubivoxCore.Worlds;
 
 namespace CubivoxServer
 {
@@ -76,6 +78,16 @@ namespace CubivoxServer
             return logger;
         }
 
+        public override ReadOnlyCollection<Player> GetOnlinePlayersImpl()
+        {
+            return players.Cast<Player>().ToList().AsReadOnly();
+        }
+
+        public override ReadOnlyCollection<World> GetWorldsImpl()
+        {
+            return worlds.Cast<World>().ToList().AsReadOnly();
+        }
+
         public override void LoadItemsStage(ItemRegistry itemRegistry)
         {
             itemRegistry.RegisterItem(new AirVoxel());
@@ -102,7 +114,7 @@ namespace CubivoxServer
             LoadMods();
 
             // Load basic stuff here for now:
-            ServerWorld world = new ServerWorld();
+            ServerWorld world = new ServerWorld( generatorRegistry.GetDefaultWorldGenerator() );
             worlds.Add(world);
 
             // TODO: Don't hard code this in the future.
