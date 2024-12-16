@@ -23,5 +23,14 @@ namespace CubivoxServer.Networking
                 buffIndex += await stream.ReadAsync(buffer, buffIndex, buffer.Length - buffIndex);
             }
         }
+
+        public static async Task ReadFromNetwork(byte[] buffer, int count, NetworkStream stream)
+        {
+            int buffIndex = 0;
+            while (buffIndex < count)
+            {
+                buffIndex += await stream.ReadAsync(buffer, buffIndex, count - buffIndex);
+            }
+        }
     }
 }

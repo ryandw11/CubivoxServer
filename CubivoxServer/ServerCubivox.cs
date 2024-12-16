@@ -30,6 +30,7 @@ using CubivoxServer.Worlds;
 using CubivoxServer.Worlds.Generation;
 using System.Collections.ObjectModel;
 using CubivoxCore.Worlds;
+using CubivoxServer.Networking.Transports;
 
 namespace CubivoxServer
 {
@@ -54,6 +55,8 @@ namespace CubivoxServer
             itemRegistry = new ServerItemRegistry();
             generatorRegistry = new ServerGeneratorRegistry();
             eventManager = new ServerEventManager();
+            transportRegistry = new ServerTransportRegistry();
+
             clientManager = new ClientManager();
             packetManager = new ServerBoundPacketManager();
             mods = new List<Mod>();
@@ -66,6 +69,7 @@ namespace CubivoxServer
             packetManager.RegisterPacket(new UpdatePlayerPosition());
             packetManager.RegisterPacket(new SBBreakVoxelPacket());
             packetManager.RegisterPacket(new SBPlaceVoxelPacket());
+            packetManager.RegisterPacket(new ServerTransportPacket());
         }
 
         public override EnvType GetEnvType()
