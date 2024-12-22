@@ -12,7 +12,7 @@ using CubivoxCore.Voxels;
 
 using CubivoxServer.Networking;
 using CubivoxServer.Utils;
-using CubivoxServer.Voxels;
+using CubivoxServer.Worlds;
 
 namespace CubivoxServer.Protocol.ServerBound
 {

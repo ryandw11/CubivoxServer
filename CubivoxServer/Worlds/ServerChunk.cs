@@ -10,7 +10,6 @@ using CubivoxCore.Voxels;
 using CubivoxCore.Worlds;
 using CubivoxServer.Players;
 using CubivoxServer.Protocol.ClientBound;
-using CubivoxServer.Voxels;
 using CubivoxServer.Worlds.Generation;
 
 namespace CubivoxServer.Worlds

@@ -94,8 +94,7 @@ namespace CubivoxServer
 
         public override void LoadItemsStage(ItemRegistry itemRegistry)
         {
-            itemRegistry.RegisterItem(new AirVoxel());
-            itemRegistry.RegisterItem(new TestVoxel(this));
+            RegisterBaseGameVoxels();
         }
 
         public override void LoadGeneratorsStage(GeneratorRegistry generatorRegistry)
@@ -297,6 +296,12 @@ namespace CubivoxServer
 
             foreach(FileInfo file in dir.GetFiles())
             {
+                if( file.Name.StartsWith("_") )
+                {
+                    // Ignore mods that start with an _
+                    continue;
+                }
+
                 var dll = Assembly.LoadFile(file.FullName);
                 var resourceName = file.Name.Replace(".dll", "") + ".mod.json";
 

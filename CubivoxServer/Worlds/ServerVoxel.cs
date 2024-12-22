@@ -8,9 +8,7 @@ using CubivoxCore;
 using CubivoxCore.Voxels;
 using CubivoxCore.Worlds;
 
-using CubivoxServer.Worlds;
-
-namespace CubivoxServer.Voxels
+namespace CubivoxServer.Worlds
 {
     public class ServerVoxel : Voxel
     {

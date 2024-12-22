@@ -26,6 +26,7 @@ namespace CubivoxServer.Worlds.Generation
             else
             {
                 VoxelMap[CurrentVoxelIndex] = voxelId;
+                Voxels[x, y, z] = CurrentVoxelIndex;
                 CurrentVoxelIndex++;
             }
         }
