@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using CubivoxCore;
+using CubivoxCore.Worlds;
 using CubivoxServer.Worlds;
 
 namespace CubivoxServer
@@ -16,9 +17,9 @@ namespace CubivoxServer
             return (int) Math.Floor(v);
         }
 
-        public static bool InChunk(Location chunkLocation, int voxelX, int voxelY, int voxelZ)
+        public static bool InChunk(ChunkLocation chunkLocation, int voxelX, int voxelY, int voxelZ)
         {
-            Location trueChunkLoc = chunkLocation * ServerChunk.CHUNK_SIZE;
+            Location trueChunkLoc = chunkLocation.ToLocation();
             double xDiff = voxelX - trueChunkLoc.x;
             double yDiff = voxelY - trueChunkLoc.y;
             double zDiff = voxelZ - trueChunkLoc.z;

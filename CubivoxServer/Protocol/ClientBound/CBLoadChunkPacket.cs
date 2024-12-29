@@ -21,9 +21,9 @@ namespace CubivoxServer.Protocol.ClientBound
 
         public void WritePacket(NetworkStream stream)
         {
-            stream.Write(BitConverter.GetBytes((int)serverChunk.GetLocation().x));
-            stream.Write(BitConverter.GetBytes((int)serverChunk.GetLocation().y));
-            stream.Write(BitConverter.GetBytes((int)serverChunk.GetLocation().z));
+            stream.Write(BitConverter.GetBytes((int)serverChunk.GetLocation().X));
+            stream.Write(BitConverter.GetBytes((int)serverChunk.GetLocation().Y));
+            stream.Write(BitConverter.GetBytes((int)serverChunk.GetLocation().Z));
             stream.Write(BitConverter.GetBytes((short)serverChunk.VoxelMap().Count));
             SortedDictionary <byte, short> shortedVoxelMap = new SortedDictionary<byte, short>(serverChunk.VoxelMap());
             foreach (var kv in shortedVoxelMap)

@@ -8,6 +8,7 @@ using CubivoxCore;
 using CubivoxCore.Utils;
 using CubivoxCore.Voxels;
 using CubivoxCore.Worlds;
+using CubivoxCore.Worlds.Generation;
 using CubivoxServer.Players;
 using CubivoxServer.Protocol.ClientBound;
 using CubivoxServer.Worlds.Generation;
@@ -18,17 +19,17 @@ namespace CubivoxServer.Worlds
     {
         public static readonly int CHUNK_SIZE = 16;
 
-        private Location location;
+        private ChunkLocation location;
         private byte[,,] voxels = new byte[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
         private Dictionary<byte, short> voxelMap = new Dictionary<byte, short>();
         private byte currentVoxelIndex = 0;
 
-        public ServerChunk(Location location)
+        public ServerChunk(ChunkLocation location)
         {
             this.location = location;
         }
 
-        public Location GetLocation()
+        public ChunkLocation GetLocation()
         {
             return location;
         }
@@ -44,7 +45,7 @@ namespace CubivoxServer.Worlds
 
         public World GetWorld()
         {
-            return location.GetWorld().Get();
+            return location.World;
         }
 
         /// <summary>
@@ -69,7 +70,7 @@ namespace CubivoxServer.Worlds
         public void Regenerate()
         {
             ServerChunkData chunkData = new ServerChunkData();
-            GetWorld().GetGenerator().GenerateChunk(location.GetVoxelX(), location.GetVoxelY(), location.GetVoxelZ(), chunkData);
+            GetWorld().GetGenerator().GenerateChunk(location.X, location.Y, location.Z, chunkData);
 
             // Move over the generate data
             lock (voxels)
@@ -146,6 +147,32 @@ namespace CubivoxServer.Worlds
         private short VoxelDefToShort(VoxelDef voxelDef)
         {
             return ServerCubivox.GetServer().GetServerItemRegistry().GetVoxelDefId(voxelDef);
+        }
+
+        public ChunkBulkEditor StartBulkEdit()
+        {
+            lock (voxels)
+            {
+                return new ServerChunkBulkEditor(voxels, voxelMap, currentVoxelIndex, location);
+            }
+        }
+
+        public void SubmitBulkEdit(ChunkBulkEditor chunkBulkEditor)
+        {
+            var serverBulkEditor = (ServerChunkBulkEditor) chunkBulkEditor;
+            lock (voxels)
+            {
+                voxelMap = serverBulkEditor.VoxelMap;
+                voxels = serverBulkEditor.Voxels;
+                currentVoxelIndex = serverBulkEditor.CurrentVoxelIndex;
+            }
+
+            // Send the chunk load packet to the clients.
+            var players = ServerCubivox.GetServer().GetPlayers();
+            foreach (ServerPlayer player in players)
+            {
+                player.SendPacket(new CBLoadChunkPacket(this));
+            }
         }
     }
 }

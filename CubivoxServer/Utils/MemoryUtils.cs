@@ -40,5 +40,21 @@ namespace CubivoxServer.Utils
             }
             return result;
         }
+
+        public static void CopyArray<T>(ref T[,,] input, ref T[,,] output, int totalLength) where T : unmanaged
+        {
+            unsafe
+            {
+                fixed (T* inputStart = &input[0, 0, 0])
+                {
+                    var inputSpan = new Span<T>(inputStart, totalLength);
+                    fixed (T* outputStart = &output[0, 0, 0])
+                    {
+                        var outputSpan = new Span<T>(outputStart, totalLength);
+                        inputSpan.CopyTo(outputSpan);
+                    }
+                }
+            }
+        }
     }
 }

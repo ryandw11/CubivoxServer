@@ -11,14 +11,13 @@ namespace CubivoxServer.Worlds
     public class ServerWorld : World
     {
         private Location spawnLocation;
-        private ConcurrentDictionary<Location, ServerChunk> loadedChunks;
-        private int renderDistance = 16;
+        private ConcurrentDictionary<ChunkLocation, ServerChunk> loadedChunks;
         private WorldGenerator worldGenerator;
 
         public ServerWorld(WorldGenerator generator)
         {
             spawnLocation = new Location(0, 0, 0);
-            loadedChunks = new ConcurrentDictionary<Location, ServerChunk>();
+            loadedChunks = new ConcurrentDictionary<ChunkLocation, ServerChunk>();
             worldGenerator = generator;
         }
 
@@ -32,7 +31,7 @@ namespace CubivoxServer.Worlds
             loadedChunks.Remove(chunk.GetLocation(), out _);
         }
 
-        public Chunk GetChunk(Location location)
+        public Chunk GetChunk(ChunkLocation location)
         {
             ServerChunk output;
             if (loadedChunks.TryGetValue(location, out output))
@@ -45,7 +44,7 @@ namespace CubivoxServer.Worlds
 
         public Chunk GetChunk(int x, int y, int z)
         {
-            return GetChunk(new Location(this, x, y, z));
+            return GetChunk(new ChunkLocation(this, x, y, z));
         }
 
         public Location GetSpawnLocation()
@@ -66,39 +65,19 @@ namespace CubivoxServer.Worlds
             return chunk.GetVoxel(x, y, z);
         }
 
-        public bool IsChunkLoaded(Location location)
+        public bool IsChunkLoaded(ChunkLocation location)
         {
             return loadedChunks.TryGetValue(location, out _);
         }
 
         public bool IsChunkLoaded(int x, int y, int z)
         {
-            return IsChunkLoaded(new Location(x, y, z));
+            return IsChunkLoaded(new ChunkLocation(this, x, y, z));
         }
 
         public bool IsChunkLoaded(Chunk chunk)
         {
             return IsChunkLoaded(chunk.GetLocation());
-        }
-
-        public void LoadChunk(Location location)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void LoadChunk(int x, int y, int z)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void LoadChunk(Chunk chunk)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Save()
-        {
-            throw new NotImplementedException();
         }
 
         public void SetVoxel(int x, int y, int z, VoxelDef voxel)
@@ -128,7 +107,7 @@ namespace CubivoxServer.Worlds
             throw new NotImplementedException();
         }
 
-        public ConcurrentDictionary<Location, ServerChunk> GetLoadedChunks()
+        public ConcurrentDictionary<ChunkLocation, ServerChunk> GetLoadedChunks()
         {
             return loadedChunks;
         }
@@ -136,6 +115,11 @@ namespace CubivoxServer.Worlds
         public WorldGenerator GetGenerator()
         {
             return worldGenerator;
+        }
+
+        public WorldBulkEditor StartBulkEdit(Cuboid editCuboid)
+        {
+            return new ServerWorldBulkEditor(editCuboid, this);
         }
     }
 }

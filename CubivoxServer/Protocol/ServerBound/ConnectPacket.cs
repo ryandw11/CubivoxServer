@@ -11,6 +11,7 @@ using CubivoxCore;
 using CubivoxServer.Players;
 using CubivoxServer.Protocol.ClientBound;
 using CubivoxServer.Worlds;
+using CubivoxCore.Worlds;
 
 namespace CubivoxServer.Protocol.ServerBound
 {
@@ -67,10 +68,10 @@ namespace CubivoxServer.Protocol.ServerBound
         {
             Console.WriteLine("[DEBUG] Starting to send chunk data to player: " + client.GetServerPlayer().GetName());
             ServerWorld world = ServerCubivox.GetServer().GetWorlds()[0];
-            Dictionary<Location, ServerChunk> chunks;
+            Dictionary<ChunkLocation, ServerChunk> chunks;
             lock (world)
             {
-                 chunks = new Dictionary<Location, ServerChunk>(world.GetLoadedChunks());
+                 chunks = new Dictionary<ChunkLocation, ServerChunk>(world.GetLoadedChunks());
             }
             foreach(var chunk in chunks)
             {

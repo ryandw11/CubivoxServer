@@ -130,11 +130,11 @@ namespace CubivoxServer
                 {
                     for (int z = -10; z < 10; z++)
                     {
-                        ServerChunk serverChunk = new ServerChunk(new Location(world, x, y, z));
+                        ServerChunk serverChunk = new ServerChunk(new ChunkLocation(world, x, y, z));
                         generationTasks.Add(Task.Factory.StartNew(o => {
                             ServerChunk sChunk = (ServerChunk) o;
                             ServerChunkData sData = new ServerChunkData();
-                            generatorRegistry.GetDefaultWorldGenerator().GenerateChunk(sChunk.GetLocation().GetVoxelX(), sChunk.GetLocation().GetVoxelY(), sChunk.GetLocation().GetVoxelZ(), sData);
+                            generatorRegistry.GetDefaultWorldGenerator().GenerateChunk(sChunk.GetLocation().X, sChunk.GetLocation().Y, sChunk.GetLocation().Z, sData);
                             sChunk.PopulateChunk(sData.Voxels, sData.VoxelMap, sData.CurrentVoxelIndex);
                             world.AddLoadedChunk(sChunk);
                         }, serverChunk));
